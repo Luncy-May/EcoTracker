@@ -1,27 +1,51 @@
-import React, { useState } from 'react'
+import React, { useState } from 'react';
 import axios from 'axios';
 import AddItem from './AddItem';
-import { FaRobot, FaTimes } from 'react-icons/fa'
+import { FaRobot } from 'react-icons/fa';
 import ReactMarkdown from 'react-markdown';
+import { FaTimes } from 'react-icons/fa';
 
 const Cart = () => {
     const [prompt, setPrompt] = useState('');
     const [response, setResponse] = useState('');
-    const [itemList, setItemList] = useState([]); // an array of storage items, each item is a dictionary
+    const [itemList, setItemList] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
-    // add a new item as a dictionary to an array
+
     const handleAddItem = (newItem) => {
         setItemList((prevList) => [...prevList, newItem]);
-    }
+    };
+    // Sorting by perish time urgency
+    const handleSortByUrgency = () => {
+        const sortedList = [...itemList].sort((a, b) => {
+            if (!a.perishable && !b.perishable) return 0;
+            if (!a.perishable) return 1;
+            if (!b.perishable) return -1;
+            return a.perishTime - b.perishTime;
+        });
+        setItemList(sortedList);
+    };
+    const handleDeleteItem = (indexToRemove) => {
+        setItemList((prevList) => prevList.filter((item, index) => index !== indexToRemove));
+    };
 
-    // function to handle deleting an item
-    const handleDeleteItem = (index) => {
-        setItemList((prevList) => prevList.filter((item, i) => i !== index));
-    }
-    // send information to backend
+    const getItemColor = (item) => {
+        if (!item.perishable) {
+            return 'text-black';
+        }
+        if (item.perishTime <= 4) {
+            return 'text-red-500';
+        }
+        if (item.perishTime <= 12) {
+            return 'text-yellow-500';
+        }
+        if (item.perishTime <= 24) {
+            return 'text-green-500';
+        }
+        return 'text-black';
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
-        setIsLoading(true)
         let itemDescriptions = itemList.map(item => {
             if (item.perishable) {
                 return `${item.label} perishing in ${item.perishTime} hours`;
@@ -29,7 +53,7 @@ const Cart = () => {
                 return item.label;
             }
         }).join(", ");
-
+        setIsLoading(true)
         const prompt = `I have a list of items, could you give me some eco-friendly suggestions of how to use and compost these items? ${itemDescriptions}`;
 
         try {
@@ -53,21 +77,24 @@ const Cart = () => {
                         </button>
                     </div>
                     <div className='text-left mt-5 mb-5'>
-                        {/* pass handleAddItem to AddItem component */}
                         <AddItem handleAddItem={handleAddItem} />
                     </div>
                     <div className='border border-gray-300 shadow-sm hover:shadow-lg p-5'>
-                        {/* display the user's list of items */}
-                        <h1>Item List:</h1>
+                        <div className='flex justify-center items-center'>
+                            <h1>Item List:</h1>
+                            <button
+                                onClick={handleSortByUrgency}
+                                className='scale-75 bg-gray-300 px-4 py-2 rounded-md shadow-md hover:bg-gray-400'>
+                                Sort by Urgency
+                            </button>
+                        </div>
+
                         {itemList.map((item, index) => (
-                            <div key={index} className='flex justify-between items-center'>
-                                <div>
-                                    {index + 1}. {item.label} {item.perishable && (<span>, perish(es) in {item.perishTime} hours</span>)}
-                                </div>
-                                <FaTimes
-                                    className="cursor-pointer ml-2 text-red-600"
-                                    onClick={() => handleDeleteItem(index)}
-                                />
+                            <div key={index} className='flex justify-between'>
+                                <span className={getItemColor(item)}>
+                                    {index + 1}. {item.label} {item.perishable && `, perish(es) in ${item.perishTime} hours`}
+                                </span>
+                                <FaTimes onClick={() => handleDeleteItem(index)} className='cursor-pointer text-red-500 hover:text-red-700' />
                             </div>
                         ))}
                     </div>
@@ -81,7 +108,6 @@ const Cart = () => {
                             {isLoading && <span>thinking...</span>}
                         </span>
                     </h1>
-                    {/* display the AI's response */}
                     {response ? (
                         <div className='text-left'>
                             <ReactMarkdown
@@ -106,7 +132,7 @@ const Cart = () => {
                 </div>
             </div>
         </div>
-    )
+    );
 }
 
 export default Cart;
