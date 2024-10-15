@@ -16,8 +16,9 @@ const corsOptions = {
 };
 app.use(cors(corsOptions));
 
+// send a request to get AI's recommendations
 app.post('/api/ask-ai', async (req, res) => {
-  const { prompt } = req.body;
+  const { prompt } = req.body; // question from backend 
   console.log(prompt)
   try {
     const response = await axios.post(
@@ -38,7 +39,7 @@ app.post('/api/ask-ai', async (req, res) => {
         },
       }
     );
-
+    // get response from AI
     const aiResponse = response.data.choices.map((choice) => choice.message.content).join('');
     res.json({ response: aiResponse });
   } catch (error) {

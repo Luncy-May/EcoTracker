@@ -9,16 +9,16 @@ const Cart = () => {
     const [response, setResponse] = useState('');
     const [itemList, setItemList] = useState([]); // an array of storage items, each item is a dictionary
     const [isLoading, setIsLoading] = useState(false);
-
+    // add a new item as a dictionary to an array
     const handleAddItem = (newItem) => {
         setItemList((prevList) => [...prevList, newItem]);
     }
 
-    // Function to handle deleting an item
+    // function to handle deleting an item
     const handleDeleteItem = (index) => {
         setItemList((prevList) => prevList.filter((item, i) => i !== index));
     }
-
+    // send information to backend
     const handleSubmit = async (e) => {
         e.preventDefault();
         setIsLoading(true)
@@ -53,10 +53,11 @@ const Cart = () => {
                         </button>
                     </div>
                     <div className='text-left mt-5 mb-5'>
-                        {/* Pass handleAddItem to AddItem component */}
+                        {/* pass handleAddItem to AddItem component */}
                         <AddItem handleAddItem={handleAddItem} />
                     </div>
                     <div className='border border-gray-300 shadow-sm hover:shadow-lg p-5'>
+                        {/* display the user's list of items */}
                         <h1>Item List:</h1>
                         {itemList.map((item, index) => (
                             <div key={index} className='flex justify-between items-center'>
@@ -80,6 +81,7 @@ const Cart = () => {
                             {isLoading && <span>thinking...</span>}
                         </span>
                     </h1>
+                    {/* display the AI's response */}
                     {response ? (
                         <div className='text-left'>
                             <ReactMarkdown
