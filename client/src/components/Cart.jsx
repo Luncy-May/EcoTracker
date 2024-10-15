@@ -1,51 +1,110 @@
 import React, { useState } from 'react'
 import axios from 'axios';
 import AddItem from './AddItem';
+import { FaRobot, FaTimes } from 'react-icons/fa'
+import ReactMarkdown from 'react-markdown';
+
 const Cart = () => {
     const [prompt, setPrompt] = useState('');
     const [response, setResponse] = useState('');
-    const [itemList, setItemList] = useState({})
+    const [itemList, setItemList] = useState([]); // an array of storage items, each item is a dictionary
+    const [isLoading, setIsLoading] = useState(false);
+
+    const handleAddItem = (newItem) => {
+        setItemList((prevList) => [...prevList, newItem]);
+    }
+
+    // Function to handle deleting an item
+    const handleDeleteItem = (index) => {
+        setItemList((prevList) => prevList.filter((item, i) => i !== index));
+    }
+
     const handleSubmit = async (e) => {
         e.preventDefault();
+        setIsLoading(true)
+        let itemDescriptions = itemList.map(item => {
+            if (item.perishable) {
+                return `${item.label} perishing in ${item.perishTime} hours`;
+            } else {
+                return item.label;
+            }
+        }).join(", ");
+
+        const prompt = `I have a list of items, could you give me some eco-friendly suggestions of how to use and compost these items? ${itemDescriptions}`;
+
         try {
             const result = await axios.post('http://localhost:5003/api/ask-ai', { prompt });
             setResponse(result.data.response);
         } catch (error) {
             console.error('Error:', error);
+        } finally {
+            setIsLoading(false)
         }
     };
+
     return (
-        <div className='font-semibold pt-10 overflow-y-auto'>
-            <h1 className='text-3xl text-center'>EcoTracker</h1>
+        <div className='pt-10 overflow-y-auto'>
+            <h1 className='font-semibold text-3xl text-center'>EcoTracker</h1>
             <div className='items-center justify-center flex flex-row p-3 m-2 space-x-10 text-2xl'>
-                <div className='w-1/2 font-semibold text-center p-5 border border-gray-300 shadow-md hover:shadow-lg h-[600px] overflow-y-auto'>
+                <div className='w-1/2 font-semibold text-center p-5 border border-gray-300 shadow-md hover:shadow-lg h-[700px] overflow-y-auto'>
                     <div className='inline-block'>
-                        <h1>Item List:</h1>
                         <button type="submit" className='mt-3' onClick={handleSubmit}>
-                            <span className='px-4 py-2 inline-block bg-blue-500 text-white rounded-md shadow-md hover:bg-blue-600 focus:outline-none active:bg-blue-700'>Get Recommendation</span>
+                            <span className={`px-4 py-2 rounded-lg text-white ${isLoading ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-500 hover:bg-blue-700 cursor-pointer'}`}>Get Recommendation</span>
                         </button>
                     </div>
                     <div className='text-left mt-5 mb-5'>
-                        <AddItem itemList={itemList} setItemList={setItemList} />
+                        {/* Pass handleAddItem to AddItem component */}
+                        <AddItem handleAddItem={handleAddItem} />
+                    </div>
+                    <div className='border border-gray-300 shadow-sm hover:shadow-lg p-5'>
+                        <h1>Item List:</h1>
+                        {itemList.map((item, index) => (
+                            <div key={index} className='flex justify-between items-center'>
+                                <div>
+                                    {index + 1}. {item.label} {item.perishable && (<span>, perish(es) in {item.perishTime} hours</span>)}
+                                </div>
+                                <FaTimes
+                                    className="cursor-pointer ml-2 text-red-600"
+                                    onClick={() => handleDeleteItem(index)}
+                                />
+                            </div>
+                        ))}
                     </div>
                 </div>
 
-
-                <div className='w-1/2 font-semibold text-center p-5 border border-gray-300 shadow-md hover:shadow-lg h-[600px] overflow-y-auto'>
+                <div className='w-1/2 text-center p-5 border border-gray-300 shadow-md hover:shadow-lg h-[700px] overflow-y-auto'>
+                    <h1 className='flex font-semibold justify-center items-center mb-3'>
+                        AI Assistant
+                        <span className='ml-5 flex items-center space-x-2'>
+                            <FaRobot className="inline-block" />
+                            {isLoading && <span>thinking...</span>}
+                        </span>
+                    </h1>
                     {response ? (
-                        <div>
-                            <p>{response}</p>
+                        <div className='text-left'>
+                            <ReactMarkdown
+                                components={{
+                                    h1: ({ node, ...props }) => <h1 className="text-2xl my-3" {...props} />,
+                                    h2: ({ node, ...props }) => <h2 className="text-xl my-2" {...props} />,
+                                    p: ({ node, ...props }) => <p className="text-lg my-2" {...props} />,
+                                    ul: ({ node, ...props }) => <ul className="text-lg list-disc list-inside my-2" {...props} />,
+                                    ol: ({ node, ...props }) => <ol className="text-lg list-decimal list-inside my-2" {...props} />,
+                                    li: ({ node, ...props }) => <li className="ml-4 my-1" {...props} />,
+                                    strong: ({ node, ...props }) => <strong className="font-bold" {...props} />,
+                                }}
+                            >
+                                {response}
+                            </ReactMarkdown>
                         </div>
                     ) : (
                         <div>
-                            The AI hasn't returned any response yet.
+                            Welcome! Feel free to create a list of your stored items to receive valuable eco-friendly tips on managing perishable goods and proper composting techniques, helping you protect the environment.
                         </div>
                     )}
                 </div>
             </div>
-
         </div>
     )
 }
 
-export default Cart
+export default Cart;
