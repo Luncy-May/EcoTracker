@@ -1,4 +1,4 @@
-// npm install express axios dotenv
+// npm install express cors axios dotenv
 
 const express = require('express');
 const cors = require('cors');

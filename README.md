@@ -28,7 +28,7 @@ To get started with **EcoTracker** locally, follow the instructions below.
 
    ```bash
    cd client
-   npm install @mui/material @emotion/react @emotion/styled react-markdown
+   npm install @mui/material @emotion/react @emotion/styled react-markdown react-icons
    ```
 
 3. **Set Up the Server**
