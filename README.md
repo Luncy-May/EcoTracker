@@ -1,4 +1,6 @@
+# EcoTracker
 
+EcoTracker is a sustainable living project designed to help users track their stored items and receive personalized eco-friendly recommendations. The app allows users to input details about perishable and non-perishable goods, and through AI integration, it offers suggestions on how to manage, utilize, and compost these items. The aim is to promote environmental consciousness by guiding users towards more sustainable practices, including reducing food waste and composting effectively.
 
 ## Getting Started
 
